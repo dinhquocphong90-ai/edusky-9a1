@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Lớp 9A1 - GVCN Đinh Quốc Phong</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --sky-primary: #0369a1;
+      --sky-secondary: #0284c7;
+      --sky-light: #38bdf8;
+      --sky-bg: #e2eefe;
+      --cloud-white: #ffffff;
+      --cloud-soft: #f1f5f9;
+      --sky-border: #cbd5e1;
+      --text-dark: #0f172a;
+      --text-muted: #475569;
+      --success: #15803d;
+      --warning: #b45309;
+      --danger: #b91c1c;
+      --shadow-sm: 0 2px 8px rgba(3, 105, 161, 0.08);
+      --shadow-md: 0 8px 24px rgba(3, 105, 161, 0.12);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--sky-bg); color: var(--text-dark); min-height: 100vh; }
+
+    /* MÀN HÌNH ĐĂNG NHẬP */
+    #authOverlay {
+      position: fixed; inset: 0; background: linear-gradient(135deg, #bae6fd, #7dd3fc);
+      display: flex; align-items: center; justify-content: center; z-index: 999;
+    }
+    .login-box {
+      background: white; padding: 36px 32px; border-radius: 20px; width: 100%; max-width: 420px;
+      box-shadow: 0 20px 40px rgba(3, 105, 161, 0.25); border: 2px solid var(--sky-border); text-align: center;
+    }
+    .login-box .icon {
+      width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+      color: white; font-size: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-bottom: 6px; }
+    .form-control {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--sky-border); border-radius: 10px;
+      font-size: 13.5px; outline: none; background: var(--cloud-soft); transition: 0.2s;
+    }
+    .form-control:focus { border-color: var(--sky-primary); background: white; }
+    .btn-login {
+      width: 100%; padding: 12px; background: var(--sky-primary); color: white; border: none;
+      border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .btn-login:hover { background: #075985; }
+    .login-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 14px; line-height: 1.5; }
+
+    /* LAYOUT TỔNG THỂ CĂN GIỮA */
+    #mainApp { display: none; padding: 18px 24px; max-width: 1720px; margin: 0 auto; }
+    
+    /* TOPBAR TRUNG TÂM */
+    .top-header {
+      background: white; border: 1.5px solid var(--sky-border); border-radius: var(--radius);
+      padding: 14px 24px; margin-bottom: 18px; box-shadow: var(--shadow-sm);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .brand-title { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+      color: white; display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .btn-action {
+      background: var(--cloud-white); border: 1.5px solid var(--sky-border); padding: 8px 14px;
+      border-radius: 8px; font-size: 12.5px; font-weight: 700; color: var(--text-dark); cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: 0.2s;
+    }
+    .btn-action:hover { background: #cbd5e1; }
+    .btn-excel { background: #15803d; color: white; border: none; }
+    .btn-excel:hover { background: #166534; color: white; }
+
+    /* BỐ CỤC 3 CỘT: TRÁI - GIỮA (TRUNG TÂM) - PHẢI */
+    .main-grid-3col {
+      display: grid;
+      grid-template-columns: 310px 1fr 310px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    /* CARD VÀ WIDGET CHUNG */
+    .widget-box {
+      background: white; border: 1.5px solid var(--sky-border); border-radius: var(--radius);
+      padding: 16px 18px; box-shadow: var(--shadow-sm); margin-bottom: 18px;
+    }
+    .widget-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+      padding-bottom: 8px; border-bottom: 1.5px solid var(--sky-border);
+    }
+    .widget-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+    /* WIDGET PROFILE BÊN TRÁI */
+    .profile-card {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+    }
+    .avatar-badge {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--sky-primary);
+      color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;
+    }
+    .role-tag { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; }
+    .role-admin { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .role-student { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+
+    /* THỐNG KÊ MINI */
+    .stat-mini-card {
+      background: white; border: 1.5px solid var(--sky-border); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 12px; border-left: 5px solid var(--sky-primary);
+    }
+    .stat-mini-card h5 { font-size: 11.5px; color: var(--text-muted); font-weight: 700; }
+    .stat-mini-number { font-size: 18px; font-weight: 800; margin: 2px 0; color: var(--text-dark); }
+    .stat-mini-desc { font-size: 11px; font-weight: 700; color: var(--sky-primary); }
+
+    /* DANH SÁCH THÔNG BÁO VÀ HOẠT ĐỘNG */
+    .widget-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+    .news-item {
+      background: #eff6ff; border: 1px solid #bfdbfe; padding: 8px 12px; border-radius: 8px;
+      font-size: 12px; line-height: 1.4; border-left: 4px solid var(--sky-primary);
+    }
+    .news-item .date { font-size: 10px; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 2px; }
+
+    .activity-item {
+      background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px 12px; border-radius: 8px;
+      font-size: 12px; line-height: 1.4; border-left: 4px solid var(--success);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .activity-badge {
+      font-size: 10px; font-weight: 800; background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px;
+    }
+
+    .birthday-box {
+      background: linear-gradient(135deg, #fce7f3, #fbcfe8); border: 1.5px solid #f472b6;
+      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px;
+    }
+    .birthday-chip {
+      background: white; border: 1px solid #db2777; padding: 3px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; color: #9d174d; display: inline-flex; align-items: center; gap: 4px; margin: 3px 2px;
+    }
+
+    /* BẢNG TRUNG TÂM (MAIN CENTER) */
+    .center-content-box {
+      background: var(--cloud-white); border: 1.5px solid var(--sky-border);
+      border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 20px;
+    }
+    .table-container { overflow-x: auto; max-height: 680px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    thead th {
+      background: #e2e8f0; color: #1e293b; font-size: 11.5px; font-weight: 800;
+      text-transform: uppercase; padding: 12px 8px; border-bottom: 2px solid var(--sky-border);
+      position: sticky; top: 0; z-index: 1; white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--sky-border); transition: 0.2s; }
+    tbody td { padding: 8px 8px; font-size: 12.5px; white-space: nowrap; }
+
+    /* BÔI MÀU TRỰC TIẾP LÊN DÒNG VI PHẠM */
+    tr.row-normal:hover { background: #f8fbff; }
+    tr.row-warning {
+      background: #fffbeb !important;
+      border-left: 5px solid #f59e0b;
+    }
+    tr.row-warning:hover { background: #fef3c7 !important; }
+    tr.row-danger {
+      background: #fef2f2 !important;
+      border-left: 5px solid #ef4444;
+    }
+    tr.row-danger:hover { background: #fee2e2 !important; }
+
+    .inline-select, .inline-input {
+      border: 1.5px solid var(--sky-border); border-radius: 6px; padding: 4px 5px;
+      font-size: 11.5px; outline: none; background: white; font-weight: 700;
+    }
+    .inline-select-violation { font-size: 11px; max-width: 125px; }
+    .inline-input-score { width: 48px; text-align: center; }
+    .inline-text { width: 100%; min-width: 130px; }
+
+    .violation-tag { font-size: 10.5px; padding: 3px 6px; border-radius: 6px; font-weight: 800; display: inline-block; }
+    .tag-normal { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .tag-warning-commit { background: #fef3c7; color: #b45309; border: 1px solid #f59e0b; }
+    .tag-danger-report { background: #fee2e2; color: #b91c1c; border: 1px solid #ef4444; }
+
+    #studentPrivateAlert {
+      display: none; background: #fff1f2; border: 1.5px solid #fda4af; border-left: 6px solid var(--danger);
+      border-radius: var(--radius); padding: 14px 18px; margin-bottom: 18px;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+      align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-card {
+      background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 500px;
+      box-shadow: var(--shadow-md); border: 2px solid var(--sky-border);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="authOverlay">
+    <div class="login-box">
+      <div class="icon"><i class="fa-solid fa-graduation-cap"></i></div>
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--sky-primary);">Hệ Thống Lớp 9A1</h2>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600;">GVCN: Thầy Đinh Quốc Phong</p>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Tên đăng nhập:</label>
+          <input type="text" id="loginUsername" class="form-control" placeholder="dinhquocphong hoặc phanhoaian" required>
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu:</label>
+          <input type="password" id="loginPassword" class="form-control" placeholder="Mật khẩu: 1234" required>
+        </div>
+        <button type="submit" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>
+      </form>
+
+      <div class="login-hint">
+        💡 <strong>GVCN (Admin):</strong> <code>dinhquocphong</code> (MK: <code>1234</code>)<br>
+        💡 <strong>Học sinh:</strong> Họ tên viết liền không dấu (MK: <code>1234</code>)
+      </div>
+    </div>
+  </div>
+
+  <div id="mainApp">
+    
+    <header class="top-header">
+      <div class="brand-title">
+        <div class="brand-icon"><i class="fa-solid fa-cloud-sun"></i></div>
+        <div>
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--sky-primary);">EduSky 9A1 - Niên Khóa 2025 - 2026</h2>
+          <p style="font-size: 12px; color: var(--text-muted); font-weight: 600;">GVCN: <strong>Đinh Quốc Phong</strong> | Sĩ số: <strong>45 học sinh</strong> | <span id="currentDateText"></span></p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <input type="text" id="searchInput" class="form-control" style="width: 170px; padding: 6px 12px;" placeholder="🔍 Tìm tên..." onkeyup="searchStudent()">
+        <button id="btnExportExcel" class="btn-action btn-excel" onclick="exportToExcel()">
+          <i class="fa-solid fa-file-excel"></i> Xuất Excel
+        </button>
+        <button id="btnExportData" class="btn-action" onclick="exportJSONData()">
+          <i class="fa-solid fa-download"></i> Tải Data
+        </button>
+        <label class="btn-action" style="cursor:pointer;" id="lblImport">
+          <i class="fa-solid fa-upload"></i> Nạp Data
+          <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importJSONData(event)">
+        </label>
+        <button class="btn-action" id="inboxNav" onclick="openInboxModal()" style="display:none;">
+          <i class="fa-solid fa-inbox"></i> Hộp Thư <span id="unreadBadge" style="background:var(--danger); color:white; font-size:10px; padding:2px 5px; border-radius:10px;">0</span>
+        </button>
+        <button class="btn-action" id="studentMsgNav" onclick="openMessageModal()">
+          <i class="fa-solid fa-paper-plane"></i> Gửi Đơn / Báo Cáo
+        </button>
+        <button class="btn-action" style="color:var(--danger);" onclick="logout()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-grid-3col">
+      
+      <aside class="left-column">
+        <div class="widget-box">
+          <div class="profile-card">
+            <div class="avatar-badge" id="userAvatar">GV</div>
+            <div>
+              <h4 style="font-size: 13px; font-weight: 800;" id="userFullName">Đinh Quốc Phong</h4>
+              <span class="role-tag" id="userRoleBadge">ADMIN</span>
+            </div>
+          </div>
+          <button class="btn-action" style="width:100%; justify-content:center; font-size:11.5px; padding:6px;" onclick="openPasswordModal()">
+            <i class="fa-solid fa-key"></i> Đổi mật khẩu
+          </button>
+        </div>
+
+        <div class="widget-box">
+          <div class="widget-header">
+            <div class="widget-title" style="color: var(--sky-primary);">
+              <i class="fa-solid fa-bullhorn"></i> Thông Báo Nhanh
+            </div>
+            <button id="btnEditNotices" class="btn-action" style="padding: 2px 6px; font-size: 10.5px; display: none;" onclick="openEditNoticesModal()">
+              <i class="fa-solid fa-pen"></i> Sửa
+            </button>
+          </div>
+          <div class="widget-list" id="noticeContainer"></div>
+        </div>
+
+        <div class="stat-mini-card">
+          <h5 id="statCard1Title">Chuyên Cần Hôm Nay</h5>
+          <div class="stat-mini-number" id="statPresentCount">45/45</div>
+          <div class="stat-mini-desc" id="statPresentPercent">100% Có mặt</div>
+        </div>
+
+        <div class="stat-mini-card" style="border-left-color: var(--danger);">
+          <h5 id="statCard3Title">Tổng Lỗi Vi Phạm Tuần</h5>
+          <div class="stat-mini-number" id="statTotalViolations" style="color: var(--danger);">0</div>
+          <div class="stat-mini-desc" id="statPendingDiscipline" style="color: var(--danger);">0 trường hợp cần xử lý</div>
+        </div>
+
+        <div class="birthday-box">
+          <h5 style="font-size: 12px; font-weight: 800; color: #9d174d; margin-bottom: 6px;" id="bdayMonthTitle">
+            <i class="fa-solid fa-cake-candles"></i> Sinh Nhật Trong Tháng
+          </h5>
+          <div id="bdayChips"></div>
+        </div>
+      </aside>
+
+      <main class="center-column">
+        <section id="studentPrivateAlert">
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color:var(--danger); font-size:20px; margin-top:2px;"></i>
+            <div>
+              <strong style="color:var(--danger); font-size:13.5px;" id="privateAlertTitle">Yêu cầu hoàn thành thủ tục kỷ luật</strong>
+              <p style="font-size:12.5px; color:#881337; margin-top:3px;" id="privateAlertContent"></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="center-content-box">
+          <div class="widget-header">
+            <div>
+              <h3 style="font-size: 15.5px; font-weight: 800; color: var(--sky-primary);" id="tableHeaderTitle">Sổ Ghi Nhận Vi Phạm Môn Học & Nề Nếp</h3>
+              <span id="roleIndicator" style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);"></span>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table id="mainStudentTable">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Họ và Tên</th>
+                  <th>Chuyên Cần</th>
+                  <th>Toán</th>
+                  <th>Văn</th>
+                  <th>Anh</th>
+                  <th>KHTN</th>
+                  <th>Tổng Lỗi</th>
+                  <th>Xử Lý</th>
+                  <th>Nề Nếp</th>
+                  <th>Vào 10</th>
+                  <th>Ghi Chú Chi Tiết</th>
+                </tr>
+              </thead>
+              <tbody id="studentTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <aside class="right-column">
+        <div class="widget-box" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #f59e0b;">
+          <div class="widget-header" style="border-color: #fde68a;">
+            <div class="widget-title" style="color: #92400e;">
+              <i class="fa-solid fa-bell"></i> Dặn Dò Hằng Ngày
+            </div>
+            <button id="btnEditDailyNote" class="btn-action" style="padding: 2px 6px; font-size: 10.5px; display: none;" onclick="openDailyNoteModal()">
+              <i class="fa-solid fa-pen"></i> Sửa
+            </button>
+          </div>
+          <div id="dailyNoteText" style="font-size: 12.5px; color: #78350f; line-height: 1.5; font-weight: 600; white-space: pre-line;">
+            Chưa có thông báo dặn dò cho ngày hôm nay.
+          </div>
+        </div>
+
+        <div class="widget-box">
+          <div class="widget-header">
+            <div class="widget-title" style="color: var(--success);">
+              <i class="fa-solid fa-calendar-check"></i> Hoạt Động Lớp
+            </div>
+            <button id="btnEditActivities" class="btn-action" style="padding: 2px 6px; font-size: 10.5px; display: none;" onclick="openEditActivitiesModal()">
+              <i class="fa-solid fa-pen"></i> Sửa
+            </button>
+          </div>
+          <div class="widget-list" id="activityContainer"></div>
+        </div>
+
+        <div class="stat-mini-card" style="border-left-color: var(--success);">
+          <h5 id="statCard2Title">Điểm Nề Nếp TB Lớp</h5>
+          <div class="stat-mini-number" id="statConductAvg">98.5</div>
+          <div class="stat-mini-desc" id="statConductDesc" style="color: var(--success);">Xếp hạng #1 Toàn trường</div>
+        </div>
+
+        <div class="stat-mini-card" style="border-left-color: var(--warning);">
+          <h5 id="statCard4Title">Đơn Phản Hồi / Xin Phép</h5>
+          <div class="stat-mini-number" id="statMsgCount">0</div>
+          <div class="stat-mini-desc" id="statMsgDesc" style="color: var(--warning);">Hộp thư đến</div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <div id="passwordModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 14px;"><i class="fa-solid fa-key" style="color:var(--sky-primary);"></i> Đổi Mật Khẩu Cá Nhân</h3>
+      <div class="form-group">
+        <label>Mật khẩu mới:</label>
+        <input type="password" id="newPassword" class="form-control" placeholder="Tối thiểu 4 ký tự..." required>
+      </div>
+      <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn-action" onclick="closeModal('passwordModal')">Hủy</button>
+        <button class="btn-login" style="width: auto; padding: 8px 16px;" onclick="changePassword()">Cập Nhật</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="noticesModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 14px;"><i class="fa-solid fa-bullhorn" style="color:var(--sky-primary);"></i> Cập Nhật Thông Báo Nhỏ (Góc Trái)</h3>
+      <div class="form-group">
+        <label>Nhập mỗi thông báo trên 1 dòng (Định dạng: Ngày | Nội dung):</label>
+        <textarea id="noticesInput" class="form-control" rows="6"></textarea>
+      </div>
+      <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn-action" onclick="closeModal('noticesModal')">Đóng</button>
+        <button class="btn-login" style="width: auto; padding: 8px 16px;" onclick="saveNotices()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="activitiesModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 14px;"><i class="fa-solid fa-calendar-check" style="color:var(--success);"></i> Cập Nhật Hoạt Động (Góc Phải)</h3>
+      <div class="form-group">
+        <label>Nhập mỗi hoạt động trên 1 dòng (Định dạng: Tên hoạt động | Trạng thái):</label>
+        <textarea id="activitiesInput" class="form-control" rows="6"></textarea>
+      </div>
+      <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn-action" onclick="closeModal('activitiesModal')">Đóng</button>
+        <button class="btn-login" style="width: auto; padding: 8px 16px; background:var(--success);" onclick="saveActivities()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dailyNoteModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 14px;"><i class="fa-solid fa-calendar-day" style="color:var(--warning);"></i> Cập Nhật Dặn Dò Hôm Nay</h3>
+      <div class="form-group">
+        <label>Nội dung dặn dò bài tập & nề nếp:</label>
+        <textarea id="dailyNoteInput" class="form-control" rows="6"></textarea>
+      </div>
+      <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn-action" onclick="closeModal('dailyNoteModal')">Đóng</button>
+        <button class="btn-login" style="width: auto; padding: 8px 16px;" onclick="saveDailyNote()">Lưu Dặn Dò</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="messageModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 14px;"><i class="fa-solid fa-envelope" style="color:var(--sky-primary);"></i> Gửi Báo Cáo / Đơn Nghỉ Phép</h3>
+      <div class="form-group">
+        <label>Loại thông điệp:</label>
+        <select id="msgType" class="form-control">
+          <option value="Đơn xin nghỉ phép">📝 Đơn xin nghỉ phép</option>
+          <option value="Nộp bản cam kết / kiểm điểm">📋 Báo cáo nộp Bản cam kết / Kiểm điểm</option>
+          <option value="Báo cáo bài tập">📚 Báo cáo hoàn thành bài tập</option>
+          <option value="Ý kiến đóng góp">💬 Ý kiến / Phản hồi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nội dung gửi Thầy Đinh Quốc Phong:</label>
+        <textarea id="messageContent" class="form-control" rows="4" placeholder="Nhập lý do hoặc nội dung cam kết..."></textarea>
+      </div>
+      <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 18px;">
+        <button class="btn-action" onclick="closeModal('messageModal')">Đóng</button>
+        <button class="btn-login" style="width: auto; padding: 8px 16px;" onclick="sendMessage()">Gửi Đi</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="inboxModal" class="modal">
+    <div class="modal-card" style="max-width: 580px;">
+      <h3 style="margin-bottom: 14px;"><i class="fa-solid fa-inbox" style="color:var(--sky-primary);"></i> Hộp Thư Phản Hồi Của Học Sinh</h3>
+      <div id="inboxList" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;"></div>
+      <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+        <button class="btn-action" style="color:var(--danger);" onclick="clearAllMessages()"><i class="fa-solid fa-trash"></i> Xóa Hết</button>
+        <button class="btn-action" onclick="closeModal('inboxModal')">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function removeVietnameseTones(str) {
+      return str.normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+        .replace(/\s+/g, '')
+        .toLowerCase();
+    }
+
+    const rawStudentList = [
+      { id: 1, name: "PHAN HOÀI AN", dob: "15/08/2012", gender: "Nữ" },
+      { id: 2, name: "NGUYỄN HOÀNG MINH ANH", dob: "28/02/2012", gender: "Nữ" },
+      { id: 3, name: "NGUYỄN HOÀNG ANH", dob: "09/10/2012", gender: "Nam" },
+      { id: 4, name: "NGÔ QUỲNH ANH", dob: "07/07/2012", gender: "Nữ" },
+      { id: 5, name: "NGUYỄN QUỐC BÌNH", dob: "21/08/2012", gender: "Nam" },
+      { id: 6, name: "BÙI NGUYỄN BẢO DUY", dob: "04/01/2012", gender: "Nam" },
+      { id: 7, name: "NGUYỄN PHÚC ĐẠT", dob: "02/07/2012", gender: "Nam" },
+      { id: 8, name: "PHẠM THÀNH ĐẠT", dob: "16/11/2012", gender: "Nam" },
+      { id: 9, name: "VÕ QUANG ĐỨC", dob: "02/06/2012", gender: "Nam" },
+      { id: 10, name: "HUỲNH GIA HÂN", dob: "03/09/2012", gender: "Nữ" },
+      { id: 11, name: "PHẠM NGỌC HIỀN", dob: "09/08/2012", gender: "Nữ" },
+      { id: 12, name: "PHAN LÊ HIẾU", dob: "24/11/2012", gender: "Nam" },
+      { id: 13, name: "TRẦN NGUYỄN HÓA", dob: "19/04/2012", gender: "Nam" },
+      { id: 14, name: "HUỲNH QUỐC HUY", dob: "14/03/2012", gender: "Nam" },
+      { id: 15, name: "HÀ NHƯ HY", dob: "08/01/2012", gender: "Nữ" },
+      { id: 16, name: "TRỊNH KHANG", dob: "28/06/2012", gender: "Nam" },
+      { id: 17, name: "LEE ĐÔNG KHOA", dob: "09/05/2012", gender: "Nam" },
+      { id: 18, name: "ĐỖ LÊ LAM KHUÊ", dob: "19/09/2012", gender: "Nữ" },
+      { id: 19, name: "PHẠM NGUYỄN THẢO LINH", dob: "06/06/2012", gender: "Nữ" },
+      { id: 20, name: "NGUYỄN PHƯƠNG LINH", dob: "13/12/2012", gender: "Nữ" },
+      { id: 21, name: "THÁI HÀ LONG", dob: "06/02/2012", gender: "Nam" },
+      { id: 22, name: "VŨ THÀNH LONG", dob: "19/06/2012", gender: "Nam" },
+      { id: 23, name: "TRẦN NGUYỄN PHƯƠNG MAI", dob: "24/03/2012", gender: "Nữ" },
+      { id: 24, name: "TRẦN TUỆ MINH", dob: "04/07/2012", gender: "Nữ" },
+      { id: 25, name: "ĐINH HOÀNG HÀ MY", dob: "31/07/2012", gender: "Nữ" },
+      { id: 26, name: "TẠ NGỌC BẢO NGÂN", dob: "03/10/2012", gender: "Nữ" },
+      { id: 27, name: "VŨ TRẦN KIM NGÂN", dob: "29/05/2012", gender: "Nữ" },
+      { id: 28, name: "HUỲNH BẢO NGỌC", dob: "20/09/2012", gender: "Nữ" },
+      { id: 29, name: "NGUYỄN TRỌNG NHÂN", dob: "05/12/2012", gender: "Nam" },
+      { id: 30, name: "TRẦN MINH PHÚC", dob: "28/10/2012", gender: "Nam" },
+      { id: 31, name: "LÊ HOÀNG PHƯỚC", dob: "22/09/2012", gender: "Nam" },
+      { id: 32, name: "TRẦN LAM PHƯƠNG", dob: "13/10/2012", gender: "Nữ" },
+      { id: 33, name: "NGUYỄN ĐÌNH HỒNG QUÂN", dob: "14/08/2012", gender: "Nam" },
+      { id: 34, name: "MAI NGỌC THẢO", dob: "22/11/2012", gender: "Nữ" },
+      { id: 35, name: "LÊ QUANG THẮNG", dob: "22/11/2012", gender: "Nam" },
+      { id: 36, name: "PHAN BÙI PHƯỚC THIỆN", dob: "30/05/2012", gender: "Nam" },
+      { id: 37, name: "NGUYỄN THỊ MINH THƯ", dob: "04/07/2012", gender: "Nữ" },
+      { id: 38, name: "TRÌNH NGỌC BẢO THY", dob: "25/10/2012", gender: "Nữ" },
+      { id: 39, name: "PHẠM LÊ BẢO TRÂN", dob: "27/10/2012", gender: "Nữ" },
+      { id: 40, name: "LÊ NGUYỄN NHẬT TRUNG", dob: "15/10/2012", gender: "Nam" },
+      { id: 41, name: "DƯƠNG KHẢ TÚ", dob: "20/04/2012", gender: "Nữ" },
+      { id: 42, name: "CHUNG KIM TUẤN", dob: "04/09/2012", gender: "Nam" },
+      { id: 43, name: "TRƯƠNG NGỌC BẢO VY", dob: "12/08/2012", gender: "Nữ" },
+      { id: 44, name: "PHAN NGỌC TÚ UYÊN", dob: "06/03/2012", gender: "Nữ" },
+      { id: 45, name: "TÔN NỮ NHƯ Ý", dob: "21/12/2012", gender: "Nữ" }
+    ];
+
+    const violationTypes = [
+      { code: "none", label: "✅ Không" },
+      { code: "no_homework", label: "❌ Quên BTVN" },
+      { code: "no_lesson", label: "❌ Không thuộc bài" },
+      { code: "talking", label: "❌ Mất trật tự" },
+      { code: "no_tools", label: "❌ Thiếu SGK/Vở" },
+      { code: "sleeping", label: "❌ Làm việc riêng" }
+    ];
+
+    function initDatabase() {
+      if (!localStorage.getItem('edu_users_9a1')) {
+        const users = { 'dinhquocphong': { name: 'Đinh Quốc Phong (GVCN)', role: 'admin', pass: '1234' } };
+        rawStudentList.forEach(s => {
+          users[removeVietnameseTones(s.name)] = { name: s.name, role: 'student', pass: '1234' };
+        });
+        localStorage.setItem('edu_users_9a1', JSON.stringify(users));
+      }
+
+      if (!localStorage.getItem('edu_students_data_9a1')) {
+        const fullData = rawStudentList.map(s => ({
+          ...s,
+          username: removeVietnameseTones(s.name),
+          attendance: 'present',
+          conductScore: 100,
+          progress: 88,
+          mathViolation: 'none',
+          literatureViolation: 'none',
+          englishViolation: 'none',
+          scienceViolation: 'none',
+          violations: 0,
+          note: ''
+        }));
+        localStorage.setItem('edu_students_data_9a1', JSON.stringify(fullData));
+      }
+
+      if (!localStorage.getItem('edu_messages_9a1')) {
+        localStorage.setItem('edu_messages_9a1', JSON.stringify([]));
+      }
+
+      if (!localStorage.getItem('edu_daily_note_9a1')) {
+        localStorage.setItem('edu_daily_note_9a1', '1. Ôn tập Toán hình chương 3.\n2. Chuẩn bị bài thuyết trình Tiếng Anh Unit 7.\n3. Đeo khăn quàng và bảng tên đúng quy định.');
+      }
+
+      if (!localStorage.getItem('edu_notices_9a1')) {
+        const defaultNotices = [
+          { time: 'Hôm nay', content: 'Kiểm tra 15 phút Tiếng Anh Unit 7.' },
+          { time: 'Thứ Năm', content: 'Hạn chót nộp bài tập nhóm Ngữ Văn.' },
+          { time: 'Thứ Sáu', content: 'Họp ban cán sự lớp lúc 16h30.' }
+        ];
+        localStorage.setItem('edu_notices_9a1', JSON.stringify(defaultNotices));
+      }
+
+      if (!localStorage.getItem('edu_activities_9a1')) {
+        const defaultActivities = [
+          { title: 'Trực nhật lớp tuần này', status: 'Tổ 2' },
+          { title: 'Phong trào Hoa Điểm 10', status: 'Đang diễn ra' },
+          { title: 'Hội thao Khối 9', status: '26/03' }
+        ];
+        localStorage.setItem('edu_activities_9a1', JSON.stringify(defaultActivities));
+      }
+    }
+
+    initDatabase();
+
+    let currentUser = null;
+    let students = JSON.parse(localStorage.getItem('edu_students_data_9a1'));
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+      const p = document.getElementById('loginPassword').value;
+      const users = JSON.parse(localStorage.getItem('edu_users_9a1'));
+
+      if (users[u] && users[u].pass === p) {
+        currentUser = { username: u, ...users[u] };
+        sessionStorage.setItem('logged_user', JSON.stringify(currentUser));
+        startApp();
+      } else {
+        alert('❌ Sai tên đăng nhập hoặc mật khẩu!');
+      }
+    }
+
+    function startApp() {
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+
+      document.getElementById('userFullName').innerText = currentUser.name;
+      document.getElementById('userAvatar').innerText = currentUser.role === 'admin' ? 'GV' : 'HS';
+      const roleBadge = document.getElementById('userRoleBadge');
+      roleBadge.innerText = currentUser.role === 'admin' ? 'GIÁO VIÊN (ADMIN)' : 'HỌC SINH';
+      roleBadge.className = `role-tag ${currentUser.role === 'admin' ? 'role-admin' : 'role-student'}`;
+
+      const isAdmin = currentUser.role === 'admin';
+      document.getElementById('inboxNav').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('lblImport').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('btnExportData').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('btnExportExcel').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('searchInput').style.display = isAdmin ? 'inline-block' : 'none';
+      document.getElementById('btnEditDailyNote').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('btnEditNotices').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('btnEditActivities').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('studentMsgNav').style.display = isAdmin ? 'none' : 'inline-flex';
+
+      if (isAdmin) {
+        document.getElementById('tableHeaderTitle').innerText = 'Sổ Ghi Nhận Vi Phạm & Nề Nếp (Toàn Lớp 45 Học Sinh)';
+        document.getElementById('roleIndicator').innerText = '🔑 Toàn quyền cập nhật lỗi môn học và điểm nề nếp';
+      } else {
+        document.getElementById('tableHeaderTitle').innerText = `Hồ Sơ Nề Nếp Cá Nhân: ${currentUser.name}`;
+        document.getElementById('roleIndicator').innerText = '🔒 Chế độ bảo mật riêng tư cá nhân';
+      }
+
+      loadWidgets();
+      loadDailyNote();
+      loadBirthdays();
+      filterAndRenderTable();
+      updateStats();
+      updateUnreadMessageBadge();
+    }
+
+    function loadWidgets() {
+      const notices = JSON.parse(localStorage.getItem('edu_notices_9a1') || '[]');
+      const noticeContainer = document.getElementById('noticeContainer');
+      noticeContainer.innerHTML = notices.length > 0 
+        ? notices.map(n => `
+            <div class="news-item">
+              <span class="date">📌 ${n.time}</span>
+              <div>${n.content}</div>
+            </div>
+          `).join('')
+        : '<p style="font-size:11px; color:var(--text-muted);">Không có thông báo mới.</p>';
+
+      const activities = JSON.parse(localStorage.getItem('edu_activities_9a1') || '[]');
+      const activityContainer = document.getElementById('activityContainer');
+      activityContainer.innerHTML = activities.length > 0 
+        ? activities.map(a => `
+            <div class="activity-item">
+              <span><strong>${a.title}</strong></span>
+              <span class="activity-badge">${a.status}</span>
+            </div>
+          `).join('')
+        : '<p style="font-size:11px; color:var(--text-muted);">Không có hoạt động.</p>';
+    }
+
+    function openEditNoticesModal() {
+      const notices = JSON.parse(localStorage.getItem('edu_notices_9a1') || '[]');
+      document.getElementById('noticesInput').value = notices.map(n => `${n.time} | ${n.content}`).join('\n');
+      document.getElementById('noticesModal').style.display = 'flex';
+    }
+
+    function saveNotices() {
+      const lines = document.getElementById('noticesInput').value.trim().split('\n');
+      const formatted = lines.filter(l => l.trim()).map(l => {
+        const parts = l.split('|');
+        return { time: parts[0]?.trim() || 'Hôm nay', content: parts[1]?.trim() || parts[0]?.trim() };
+      });
+      localStorage.setItem('edu_notices_9a1', JSON.stringify(formatted));
+      loadWidgets();
+      closeModal('noticesModal');
+      alert('✅ Đã cập nhật Bảng tin thông báo!');
+    }
+
+    function openEditActivitiesModal() {
+      const activities = JSON.parse(localStorage.getItem('edu_activities_9a1') || '[]');
+      document.getElementById('activitiesInput').value = activities.map(a => `${a.title} | ${a.status}`).join('\n');
+      document.getElementById('activitiesModal').style.display = 'flex';
+    }
+
+    function saveActivities() {
+      const lines = document.getElementById('activitiesInput').value.trim().split('\n');
+      const formatted = lines.filter(l => l.trim()).map(l => {
+        const parts = l.split('|');
+        return { title: parts[0]?.trim() || 'Hoạt động', status: parts[1]?.trim() || 'Đang thực hiện' };
+      });
+      localStorage.setItem('edu_activities_9a1', JSON.stringify(formatted));
+      loadWidgets();
+      closeModal('activitiesModal');
+      alert('✅ Đã cập nhật Hoạt động lớp!');
+    }
+
+    function getDisciplineStatus(student) {
+      const vList = [
+        student.mathViolation,
+        student.literatureViolation,
+        student.englishViolation,
+        student.scienceViolation
+      ].filter(v => v && v !== 'none');
+
+      const count = vList.length;
+      const hasDuplicateError = new Set(vList).size < vList.length;
+
+      if (count === 0) {
+        return { text: 'Tốt', tagClass: 'tag-normal', count: 0, level: 'normal' };
+      } else if (count === 1) {
+        return { text: 'Nhắc nhở', tagClass: 'tag-normal', count: 1, level: 'normal' };
+      } else if (count === 2 || hasDuplicateError) {
+        return { text: '⚠️ Bản Cam Kết', tagClass: 'tag-warning-commit', count: count, level: 'warning' };
+      } else {
+        return { text: '🚨 Bản Kiểm Điểm', tagClass: 'tag-danger-report', count: count, level: 'danger' };
+      }
+    }
+
+    function renderViolationSelect(studentId, field, currentVal, isAdmin) {
+      if (!isAdmin) {
+        const found = violationTypes.find(v => v.code === currentVal);
+        const text = found ? found.label : '✅ Không';
+        return text.includes('Không') 
+          ? `<span style="color:var(--text-muted); font-size:11.5px;">—</span>` 
+          : `<span style="color:var(--danger); font-weight:800; font-size:11.5px;">${text}</span>`;
+      }
+
+      let options = violationTypes.map(v => 
+        `<option value="${v.code}" ${currentVal === v.code ? 'selected' : ''}>${v.label}</option>`
+      ).join('');
+
+      return `
+        <select class="inline-select inline-select-violation" onchange="updateViolationField(${studentId}, '${field}', this.value)">
+          ${options}
+        </select>
+      `;
+    }
+
+    function filterAndRenderTable() {
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      let dataToRender = students;
+
+      if (!isAdmin) {
+        dataToRender = students.filter(s => s.username === currentUser.username);
+        
+        const myData = dataToRender[0];
+        const privateBox = document.getElementById('studentPrivateAlert');
+        if (myData) {
+          const discipline = getDisciplineStatus(myData);
+          if (discipline.level === 'warning') {
+            document.getElementById('privateAlertTitle').innerText = '⚠️ YÊU CẦU NỘP BẢN CAM KẾT';
+            document.getElementById('privateAlertContent').innerText = `Em đã mắc ${discipline.count} lỗi trong tuần này (hoặc có lỗi lặp lại). Vui lòng làm Bản cam kết và nộp trực tiếp cho Thầy Đinh Quốc Phong.`;
+            privateBox.style.display = 'block';
+          } else if (discipline.level === 'danger') {
+            document.getElementById('privateAlertTitle').innerText = '🚨 YÊU CẦU NỘP BẢN KIỂM ĐIỂM CÁ NHÂN';
+            document.getElementById('privateAlertContent').innerText = `Em đã mắc ${discipline.count} lỗi vi phạm trong tuần này. Quy định yêu cầu em phải viết Bản kiểm điểm có xác nhận của phụ huynh và nộp GVCN.`;
+            privateBox.style.display = 'block';
+          } else {
+            privateBox.style.display = 'none';
+          }
+        }
+      } else {
+        document.getElementById('studentPrivateAlert').style.display = 'none';
+      }
+
+      renderTable(dataToRender);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('studentTableBody');
+      tbody.innerHTML = '';
+      const isAdmin = currentUser && currentUser.role === 'admin';
+
+      data.forEach(s => {
+        const tr = document.createElement('tr');
+        const discipline = getDisciplineStatus(s);
+
+        if (discipline.level === 'warning') {
+          tr.className = 'row-warning';
+        } else if (discipline.level === 'danger') {
+          tr.className = 'row-danger';
+        } else {
+          tr.className = 'row-normal';
+        }
+        
+        let attendanceHtml = '';
+        if (isAdmin) {
+          attendanceHtml = `
+            <select class="inline-select" onchange="updateLocalField(${s.id}, 'attendance', this.value)">
+              <option value="present" ${s.attendance === 'present' ? 'selected' : ''}>✅ Có mặt</option>
+              <option value="late" ${s.attendance === 'late' ? 'selected' : ''}>⏰ Trễ</option>
+              <option value="absent" ${s.attendance === 'absent' ? 'selected' : ''}>❌ Vắng</option>
+            </select>
+          `;
+        } else {
+          attendanceHtml = s.attendance === 'present' ? '<span style="color:var(--success); font-weight:700;">Có mặt</span>' : 
+                           s.attendance === 'late' ? '<span style="color:var(--warning); font-weight:700;">Đi trễ</span>' : 
+                           '<span style="color:var(--danger); font-weight:700;">Vắng</span>';
+        }
+
+        let mathHtml = renderViolationSelect(s.id, 'mathViolation', s.mathViolation, isAdmin);
+        let litHtml = renderViolationSelect(s.id, 'literatureViolation', s.literatureViolation, isAdmin);
+        let engHtml = renderViolationSelect(s.id, 'englishViolation', s.englishViolation, isAdmin);
+        let sciHtml = renderViolationSelect(s.id, 'scienceViolation', s.scienceViolation, isAdmin);
+
+        let violationCountHtml = `<strong style="color: ${discipline.count > 0 ? 'var(--danger)' : 'var(--text-dark)'};">${discipline.count}</strong>`;
+        let disciplineHtml = `<span class="violation-tag ${discipline.tagClass}">${discipline.text}</span>`;
+
+        let conductHtml = isAdmin 
+          ? `<input type="number" min="0" max="100" class="inline-input inline-input-score" value="${s.conductScore}" onchange="updateLocalField(${s.id}, 'conductScore', this.value)">`
+          : `<strong>${s.conductScore}</strong>`;
+
+        let progressHtml = isAdmin 
+          ? `<input type="number" min="0" max="100" class="inline-input inline-input-score" value="${s.progress}" onchange="updateLocalField(${s.id}, 'progress', this.value)">%`
+          : `<strong>${s.progress}%</strong>`;
+
+        let noteHtml = isAdmin 
+          ? `<input type="text" class="inline-input inline-text" value="${s.note || ''}" placeholder="Nhắc nhở..." onchange="updateLocalField(${s.id}, 'note', this.value)">`
+          : `<span>${s.note || '—'}</span>`;
+
+        tr.innerHTML = `
+          <td><strong>${s.id}</strong></td>
+          <td><strong>${s.name}</strong></td>
+          <td>${attendanceHtml}</td>
+          <td>${mathHtml}</td>
+          <td>${litHtml}</td>
+          <td>${engHtml}</td>
+          <td>${sciHtml}</td>
+          <td>${violationCountHtml}</td>
+          <td>${disciplineHtml}</td>
+          <td>${conductHtml}</td>
+          <td>${progressHtml}</td>
+          <td>${noteHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateViolationField(id, field, value) {
+      const idx = students.findIndex(s => s.id === id);
+      if (idx !== -1) {
+        students[idx][field] = value;
+
+        const discipline = getDisciplineStatus(students[idx]);
+        students[idx].violations = discipline.count;
+
+        if (discipline.count === 0) students[idx].conductScore = 100;
+        else if (discipline.count === 1) students[idx].conductScore = 95;
+        else if (discipline.count === 2) students[idx].conductScore = 90;
+        else students[idx].conductScore = Math.max(50, 90 - (discipline.count - 2) * 10);
+
+        localStorage.setItem('edu_students_data_9a1', JSON.stringify(students));
+        filterAndRenderTable();
+        updateStats();
+      }
+    }
+
+    function updateLocalField(id, field, value) {
+      const idx = students.findIndex(s => s.id === id);
+      if (idx !== -1) {
+        const numericFields = ['conductScore', 'progress'];
+        students[idx][field] = numericFields.includes(field) ? Number(value) : value;
+        localStorage.setItem('edu_students_data_9a1', JSON.stringify(students));
+        updateStats();
+      }
+    }
+
+    function updateStats() {
+      const isAdmin = currentUser && currentUser.role === 'admin';
+
+      if (isAdmin) {
+        const presentCount = students.filter(s => s.attendance === 'present').length;
+        const total = students.length;
+        document.getElementById('statCard1Title').innerText = 'Chuyên Cần Hôm Nay';
+        document.getElementById('statPresentCount').innerText = `${presentCount}/${total}`;
+        document.getElementById('statPresentPercent').innerText = `${((presentCount/total)*100).toFixed(1)}% Có mặt`;
+
+        const avgConduct = (students.reduce((acc, cur) => acc + Number(cur.conductScore || 0), 0) / total).toFixed(1);
+        document.getElementById('statCard2Title').innerText = 'Điểm Nề Nếp TB Lớp';
+        document.getElementById('statConductAvg').innerText = avgConduct;
+        document.getElementById('statConductDesc').innerText = 'Xếp hạng #1 Toàn trường';
+
+        const totalViolations = students.reduce((acc, cur) => acc + Number(cur.violations || 0), 0);
+        document.getElementById('statCard3Title').innerText = 'Tổng Lượt Vi Phạm Tuần';
+        document.getElementById('statTotalViolations').innerText = totalViolations;
+
+        const pendingDiscipline = students.filter(s => (s.violations || 0) >= 2).length;
+        document.getElementById('statPendingDiscipline').innerText = `${pendingDiscipline} bạn cần nộp cam kết/kiểm điểm`;
+      } else {
+        const myData = students.find(s => s.username === currentUser.username);
+        if (myData) {
+          document.getElementById('statCard1Title').innerText = 'Chuyên Cần Của Em';
+          document.getElementById('statPresentCount').innerText = myData.attendance === 'present' ? 'Có mặt' : (myData.attendance === 'late' ? 'Đi trễ' : 'Vắng');
+          document.getElementById('statPresentPercent').innerText = 'Trạng thái điểm danh';
+
+          document.getElementById('statCard2Title').innerText = 'Điểm Nề Nếp Của Em';
+          document.getElementById('statConductAvg').innerText = myData.conductScore;
+          document.getElementById('statConductDesc').innerText = myData.conductScore >= 90 ? 'Xếp loại: Tốt' : 'Cần cố gắng rèn luyện';
+
+          document.getElementById('statCard3Title').innerText = 'Số Lỗi Vi Phạm Của Em';
+          document.getElementById('statTotalViolations').innerText = myData.violations || 0;
+          const discipline = getDisciplineStatus(myData);
+          document.getElementById('statPendingDiscipline').innerText = discipline.text;
+        }
+      }
+    }
+
+    function loadDailyNote() {
+      const note = localStorage.getItem('edu_daily_note_9a1') || 'Hôm nay lớp học duy trì nền nếp bình thường.';
+      document.getElementById('dailyNoteText').innerText = note;
+    }
+
+    function openDailyNoteModal() {
+      document.getElementById('dailyNoteInput').value = localStorage.getItem('edu_daily_note_9a1') || '';
+      document.getElementById('dailyNoteModal').style.display = 'flex';
+    }
+
+    function saveDailyNote() {
+      const text = document.getElementById('dailyNoteInput').value.trim();
+      localStorage.setItem('edu_daily_note_9a1', text);
+      loadDailyNote();
+      closeModal('dailyNoteModal');
+      alert('✅ Đã cập nhật sổ dặn dò hôm nay thành công!');
+    }
+
+    function getViolationText(code) {
+      const found = violationTypes.find(v => v.code === code);
+      return found ? found.label.replace('✅ ', '').replace('❌ ', '') : 'Không';
+    }
+
+    function exportToExcel() {
+      const exportData = students.map(s => {
+        const discipline = getDisciplineStatus(s);
+        return {
+          "STT": s.id,
+          "Họ và Tên": s.name,
+          "Tài Khoản": s.username,
+          "Chuyên Cần": s.attendance === 'present' ? 'Có mặt' : (s.attendance === 'late' ? 'Đi trễ' : 'Vắng'),
+          "Lỗi Môn Toán": getViolationText(s.mathViolation),
+          "Lỗi Môn Ngữ Văn": getViolationText(s.literatureViolation),
+          "Lỗi Môn Tiếng Anh": getViolationText(s.englishViolation),
+          "Lỗi Môn KHTN": getViolationText(s.scienceViolation),
+          "Tổng Lỗi Vi Phạm": discipline.count,
+          "Biện Pháp Xử Lý": discipline.text,
+          "Điểm Nề Nếp": s.conductScore,
+          "Tiến Độ Vào 10 (%)": s.progress,
+          "Ghi Chú": s.note || ''
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      worksheet['!cols'] = [
+        { wch: 6 }, { wch: 28 }, { wch: 18 }, { wch: 14 }, 
+        { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, 
+        { wch: 16 }, { wch: 24 }, { wch: 14 }, { wch: 18 }, { wch: 32 }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Theo_Doi_Vi_Pham_9A1");
+      const todayStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `Bang_Theo_Doi_Vi_Pham_Mon_Hoc_9A1_${todayStr}.xlsx`);
+    }
+
+    function exportJSONData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `Du_Lieu_Lop_9A1_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importJSONData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            students = imported;
+            localStorage.setItem('edu_students_data_9a1', JSON.stringify(students));
+            filterAndRenderTable();
+            updateStats();
+            alert('✅ Đã nạp thành công dữ liệu!');
+          }
+        } catch (err) {
+          alert('❌ File dữ liệu không đúng định dạng JSON!');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function sendMessage() {
+      const type = document.getElementById('msgType').value;
+      const content = document.getElementById('messageContent').value.trim();
+      if (!content) { alert('Vui lòng nhập nội dung!'); return; }
+
+      const msgs = JSON.parse(localStorage.getItem('edu_messages_9a1') || '[]');
+      msgs.unshift({
+        id: Date.now(),
+        sender: currentUser.name,
+        type: type,
+        content: content,
+        time: new Date().toLocaleTimeString('vi-VN') + ' ' + new Date().toLocaleDateString('vi-VN')
+      });
+      localStorage.setItem('edu_messages_9a1', JSON.stringify(msgs));
+      alert('📨 Tin nhắn / Đơn của em đã được gửi trực tiếp đến Thầy Đinh Quốc Phong!');
+      document.getElementById('messageContent').value = '';
+      closeModal('messageModal');
+      updateUnreadMessageBadge();
+    }
+
+    function openInboxModal() {
+      const msgs = JSON.parse(localStorage.getItem('edu_messages_9a1') || '[]');
+      const container = document.getElementById('inboxList');
+      if (msgs.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Hộp thư trống.</p>';
+      } else {
+        container.innerHTML = msgs.map(m => `
+          <div style="background:var(--cloud-soft); border:1.5px solid var(--sky-border); padding:12px; border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <strong style="color:var(--sky-primary); font-size:13px;">${m.sender}</strong>
+              <span style="font-size:11px; color:var(--text-muted);">${m.time}</span>
+            </div>
+            <span style="font-size:11px; background:#bae6fd; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:800;">${m.type}</span>
+            <p style="font-size:13px; margin-top:6px; color:var(--text-dark);">${m.content}</p>
+          </div>
+        `).join('');
+      }
+      document.getElementById('inboxModal').style.display = 'flex';
+    }
+
+    function clearAllMessages() {
+      if (confirm('Thầy có chắc chắn muốn xóa toàn bộ tin nhắn đã đọc?')) {
+        localStorage.setItem('edu_messages_9a1', JSON.stringify([]));
+        openInboxModal();
+        updateUnreadMessageBadge();
+      }
+    }
+
+    function updateUnreadMessageBadge() {
+      const msgs = JSON.parse(localStorage.getItem('edu_messages_9a1') || '[]');
+      const badge = document.getElementById('unreadBadge');
+      if (badge) badge.innerText = msgs.length;
+      const statMsg = document.getElementById('statMsgCount');
+      if (statMsg) statMsg.innerText = msgs.length;
+    }
+
+    function loadBirthdays() {
+      const currentMonth = new Date().getMonth() + 1;
+      document.getElementById('bdayMonthTitle').innerHTML = `<i class="fa-solid fa-cake-candles"></i> Sinh Nhật Tháng ${currentMonth}`;
+      const bdays = students.filter(s => s.dob && parseInt(s.dob.split('/')[1], 10) === currentMonth);
+      const container = document.getElementById('bdayChips');
+      container.innerHTML = bdays.length > 0
+        ? bdays.map(s => `<span class="birthday-chip"><i class="fa-solid fa-gift"></i> ${s.name} (${s.dob.slice(0, 5)})</span>`).join('')
+        : '<span style="font-size:11px; color:#9d174d; font-weight:700;">Tháng này không có sinh nhật bạn nào.</span>';
+    }
+
+    function openPasswordModal() { document.getElementById('passwordModal').style.display = 'flex'; }
+    function openMessageModal() { document.getElementById('messageModal').style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function changePassword() {
+      const newP = document.getElementById('newPassword').value.trim();
+      if (newP.length < 4) { alert('Mật khẩu phải từ 4 ký tự!'); return; }
+      const users = JSON.parse(localStorage.getItem('edu_users_9a1'));
+      users[currentUser.username].pass = newP;
+      localStorage.setItem('edu_users_9a1', JSON.stringify(users));
+      alert('✅ Đổi mật khẩu thành công!');
+      closeModal('passwordModal');
+    }
+
+    function searchStudent() {
+      const key = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = students.filter(s => s.name.toLowerCase().includes(key) || s.username.includes(key));
+      renderTable(filtered);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('logged_user');
+      location.reload();
+    }
+
+    window.onload = function() {
+      const savedUser = sessionStorage.getItem('logged_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        startApp();
+      }
+      document.getElementById('currentDateText').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+  </script>
+</body>
+</html>
